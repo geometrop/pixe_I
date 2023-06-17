@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+  <div id="playerContainer"></div>
+  <button onclick="playRandomVideos()">Play Random Videos</button>
+
+  <script>
+    // Utility function to get a random integer within a range
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // An array of video objects with video IDs and start times
+    var videos = [
+      { id: 'eKThFMTDwGQ', start: getRandomInt(0, 300) },
+      { id: '0Egw3hIh1FM', start: getRandomInt(0, 300) },
+      { id: '3IUxxrVlWK0', start: getRandomInt(0, 300) },
+      { id: '5yHBWJG0sro', start: getRandomInt(0, 300) },
+      // Add more video IDs and start times as needed
+    ];
+
+    var players = []; // Array to store YouTube player instances
+
+    // This function creates a YouTube player for the given video ID and start time
+    function createPlayer(playerId, videoId, startTime) {
+      return new YT.Player(playerId, {
+        height: '180',
+        width: '320',
+        videoId: videoId,
+        playerVars: {
+          start: startTime, // Set the start time for each player
+          autoplay: 0, // Disable autoplay initially
+        }
+      });
+    }
+
+    // This function checks if the video is available for playback
+    function isVideoAvailable(player) {
+      var availablePlaybackRates = player.getAvailablePlaybackRates();
+      return availablePlaybackRates && availablePlaybackRates.length > 0 && !isNaN(availablePlaybackRates[0]);
+    }
+
+    // This function creates YouTube players for all videos
+    function createPlayers() {
+      var playerContainer = document.getElementById('playerContainer');
+      playerContainer.innerHTML = ''; // Clear previous player instances
+
+      for (var i = 0; i < videos.length; i++) {
+        var video = videos[i];
+        var playerId = 'player-' + i;
+        var playerDiv = document.createElement('div');
+        playerDiv.id = playerId;
+        playerContainer.appendChild(playerDiv);
+
+        var player = createPlayer(playerId, video.id, video.start);
+        players.push(player);
+      }
+    }
+
+    // This function triggers the random video playback
+    function playRandomVideos() {
+      for (var i = 0; i < players.length; i++) {
+        var player = players[i];
+        var startTime = getRandomInt(0, 300); // Get a new random start time for each video
+        player.seekTo(startTime);
+        player.playVideo();
+      }
+    }
+
+  // Schedule the next automatic trigger
+    var nextDelay = getRandomInt(7, 60) * 1000; // Random delay between 7 to 60 seconds
+    setTimeout(playRandomVideos, nextDelay);
+
+    // Callback function when YouTube Iframe API is ready
+    function onYouTubeIframeAPIReady() {
+      createPlayers();
+      playRandomVideos(); // Trigger the initial playback
+    }
+
+    // Automatically trigger random video playback after a delay
+    var delay = getRandomInt(7, 30) * 1000; // Random delay between 7 to 60 seconds
+    setTimeout(playRandomVideos, delay);
+
+// This function generates a new random start time for a specific video
+function generateRandomStartTime() {
+  return getRandomInt(0, 300); // Adjust the range as needed
+}
+
+// This function triggers a random start time for a specific video
+function jumpToRandomStart(videoIndex) {
+  var player = players[videoIndex];
+  var startTime = generateRandomStartTime();
+  player.seekTo(startTime);
+}
+
+// This function triggers the random video playback
+function playRandomVideos() {
+  for (var i = 0; i < players.length; i++) {
+    var player = players[i];
+    var startTime = generateRandomStartTime(); // Get a new random start time for each video
+    player.seekTo(startTime);
+    player.playVideo();
+  }
+
+  // Schedule the next automatic trigger
+  var nextDelay = getRandomInt(7, 60) * 1000; // Random delay between 7 to 60 seconds
+  setTimeout(playRandomVideos, nextDelay);
+}
+
+// Callback function when YouTube Iframe API is ready
+function onYouTubeIframeAPIReady() {
+  createPlayers();
+
+  // Add event listeners to jump to random start time for each video
+  for (var i = 0; i < players.length; i++) {
+    var player = players[i];
+    player.addEventListener('onStateChange', function(event) {
+      if (event.data === YT.PlayerState.ENDED) {
+        var videoIndex = players.findIndex(p => p === event.target);
+        jumpToRandomStart(videoIndex);
+      }
+    });
+  }
+
+  playRandomVideos(); // Trigger the initial playback
+}
+
+  </script>
+</body>
+</html>
